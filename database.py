@@ -4,22 +4,13 @@ EMPRESA = {
     "nome": "RF Arquitetura & Interiores",
     "arquiteta": "Rachel Fernandes",
     "gestor": "Igor Henrique",
-    "whatsapp": "5511968744563",
+    "whatsapp": "5511968988548",
     "site": "https://rfinteriores.wixsite.com/rfarquitetura",
-    "contato_url": "https://rfinteriores.wixsite.com/rfarquitetura/contact-9",
     "portfolio": "https://www.canva.com/design/DAGisRykX5E/ZcMpMjV8gAvqCc8nZzailA/view",
     "portfolio_embed": "https://www.canva.com/design/DAGisRykX5E/ZcMpMjV8gAvqCc8nZzailA/view?embed",
     "logo": "https://static.wixstatic.com/media/b828b7_1fa3272fbe8246db97934eb79c7e0949~mv2.png/v1/fill/w_199,h_199,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a-removebg-preview.png",
     "foto_arquiteta": "https://static.wixstatic.com/media/b828b7_574b980973514a9a8cec80d6fb975dbd~mv2.jpeg/v1/crop/x_29,y_0,w_299,h_481/fill/w_419,h_668,al_c,lg_1,q_80,enc_avif,quality_auto/b828b7_574b980973514a9a8cec80d6fb975dbd~mv2.jpeg",
     "foto_gestor": "https://static.wixstatic.com/media/b828b7_7b862c5225e8485cb13849a8de09ffe3~mv2.jpg/v1/crop/x_0,y_32,w_478,h_757/fill/w_478,h_713,al_c,q_80,enc_avif,quality_auto/Imagem%20do%20WhatsApp%20de%202025-06-18%20%C3%A0(s)%2012_25_21_1ce60db6.jpg",
-}
-
-CONTATO = {
-    "telefone_1": "(11) 96874-4563",
-    "telefone_2": "(11) 92039-795",
-    "telefone_1_raw": "5511968744563",
-    "telefone_2_raw": "551192039795",
-    "email": "rrf.arquiteturainteriores@gmail.com",
 }
 
 FRASE_INSPIRACIONAL = (
@@ -44,7 +35,7 @@ em campo. Organizado, comprometido e com visão ampla de processos, assegura a e
 dos projetos, dentro dos prazos e padrões de qualidade da empresa.
 """
 
-ITENS_BASE_CASA = [
+ITENS_PROJETO_SIMPLES = [
     "Planta de arquitetura",
     "Planta de layout",
     "Planta de iluminação",
@@ -54,15 +45,19 @@ ITENS_BASE_CASA = [
     "3D fachada",
 ]
 
-ITENS_BASE_STUDIO_APT_COM = [
-    "Planta de arquitetura",
-    "Planta de layout",
-    "Planta de iluminação",
-    "Planta de forro",
-    "Pontos de elétrica",
-    "Pontos hidráulica",
-    "3D — 1 ambiente escolhido por você",
+ITENS_PROJETO_COMPLETO_EXTRA = [
+    "Planta de Demolir e construir",
+    "Planta de piso",
+    "Detalhamentos",
+    "Mapa de Esquadrias",
+    "Planta de Revestimento",
 ]
+
+ITENS_3D_AMBIENTE = "3D — 1 ambiente escolhido por você"
+
+ITENS_BASE_CASA = ITENS_PROJETO_SIMPLES
+
+ITENS_BASE_STUDIO_APT_COM = ITENS_PROJETO_SIMPLES[:-1] + [ITENS_3D_AMBIENTE]
 
 FORMAS_PAGAMENTO = [
     {"nome": "PIX", "descricao": "Pagamento instantâneo com desconto"},
@@ -81,24 +76,28 @@ CATEGORIAS = {
                 "area": "até 50 m²",
                 "valor": 1500.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 3000.00,
             },
             {
                 "nome": "60 a 80 m²",
                 "area": "60 a 80 m²",
                 "valor": 2500.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 5000.00,
             },
             {
                 "nome": "90 a 120 m²",
                 "area": "90 a 120 m²",
                 "valor": 3500.00,
                 "completo_extra": 2000.00,
+                "valor_interiores": 7000.00,
             },
             {
                 "nome": "Acima de 120 m²",
                 "area": "acima de 120 m²",
                 "valor": 6500.00,
                 "completo_extra": 2000.00,
+                "valor_interiores": 9000.00,
                 "personalizado": True,
                 "nota": "Projeto 100% personalizado",
             },
@@ -114,18 +113,21 @@ CATEGORIAS = {
                 "area": "até 24 m²",
                 "valor": 1000.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 2500.00,
             },
             {
                 "nome": "25 a 38 m²",
                 "area": "25 a 38 m²",
                 "valor": 1500.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 3000.00,
             },
             {
                 "nome": "38 a 48 m²",
                 "area": "38 a 48 m²",
                 "valor": 2000.00,
                 "completo_extra": 2000.00,
+                "valor_interiores": 3500.00,
             },
         ],
     },
@@ -139,18 +141,30 @@ CATEGORIAS = {
                 "area": "50 a 70 m²",
                 "valor": 2000.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 3000.00,
             },
             {
                 "nome": "70 a 90 m²",
                 "area": "70 a 90 m²",
                 "valor": 2500.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 5000.00,
             },
             {
                 "nome": "90 a 120 m²",
                 "area": "90 a 120 m²",
                 "valor": 3000.00,
                 "completo_extra": 2000.00,
+                "valor_interiores": 7000.00,
+            },
+            {
+                "nome": "Acima de 120 m²",
+                "area": "acima de 120 m²",
+                "valor": 6500.00,
+                "completo_extra": 2000.00,
+                "valor_interiores": 9000.00,
+                "personalizado": True,
+                "nota": "Projeto 100% personalizado",
             },
         ],
     },
@@ -164,18 +178,21 @@ CATEGORIAS = {
                 "area": "até 50 m²",
                 "valor": 1500.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 2500.00,
             },
             {
                 "nome": "50 a 70 m²",
                 "area": "50 a 70 m²",
                 "valor": 2500.00,
                 "completo_extra": 1500.00,
+                "valor_interiores": 3500.00,
             },
             {
                 "nome": "70 a 90 m²",
                 "area": "70 a 90 m²",
                 "valor": 3000.00,
                 "completo_extra": 2000.00,
+                "valor_interiores": 4500.00,
             },
         ],
     },
@@ -187,6 +204,16 @@ def url_portfolio_embed() -> str:
         "portfolio_embed",
         f"{EMPRESA['portfolio']}?embed",
     )
+
+
+def itens_projeto_simples(cat_id: str = "casas") -> list[str]:
+    if cat_id == "casas":
+        return list(ITENS_PROJETO_SIMPLES)
+    return ITENS_PROJETO_SIMPLES[:-1] + [ITENS_3D_AMBIENTE]
+
+
+def itens_projeto_completo(cat_id: str = "casas") -> list[str]:
+    return itens_projeto_simples(cat_id) + ITENS_PROJETO_COMPLETO_EXTRA
 
 
 def formatar_moeda(valor: float) -> str:

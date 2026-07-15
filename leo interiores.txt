@@ -1,0 +1,38 @@
+
+casas até 50m2 = projeto interiores 3000,00
+
+casas de 60 à 80m2 = projeto interiores 5000,00
+
+
+casas de 90 à 120m2 = projeto interiores 7000,00
+
+
+projetos acima de 120m2 =projeto interiores 9.000,00
+
+studios:
+
+studio  até 24m2 = projeto interiores 2500,00
+
+studio de 25m2 até 38m2 = projeto interiores 3000,00
+
+
+studio de 38m2 até 48m2 = projeto interiores 3500,00
+
+
+apartamentos:
+
+apartamento 50m2 á 70m2 = projeto interiores 3000,00
+
+apartamento 70m2 á 90m2 = pprojeto interiores 5000,00
+
+apartamento 90m2 á 120m2 = projeto interiores 7000,00
+
+apartamento acima 120m2 = projeto interiores 9000,00
+
+comercial:
+
+até  50m2  = projeto interiores 2500,00
+50m2 á 70m2 = projeto interiores 3500,00
+70m2 á 90m2 = projeto interiores 4500,00
+
+

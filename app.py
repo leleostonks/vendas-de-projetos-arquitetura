@@ -9,13 +9,14 @@ importlib.reload(database)
 
 from database import (
     CATEGORIAS,
-    CONTATO,
     EMPRESA,
     FORMAS_PAGAMENTO,
     FRASE_INSPIRACIONAL,
+    ITENS_PROJETO_COMPLETO_EXTRA,
     SOBRE_ARQUITETA,
     SOBRE_GESTOR,
     formatar_moeda,
+    itens_projeto_simples,
     listar_todas_variantes,
     url_portfolio_embed,
 )
@@ -67,12 +68,81 @@ CSS = """
         color: #3d3428;
     }
 
+    /* Área principal: texto escuro em fundo claro */
+    [data-testid="stAppViewContainer"] [data-testid="stMain"],
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] li,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] label,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stMarkdown,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] [data-testid="stCaptionContainer"] {
+        color: #3d3428 !important;
+    }
+
+    /* Botões e links: texto claro no fundo escuro/dourado */
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button span,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] a[data-testid="stBaseLinkButton-secondary"],
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] a[data-testid="stBaseLinkButton-secondary"] p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] a[data-testid="stBaseLinkButton-secondary"] span {
+        color: #fff8f0 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button:hover,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button:hover p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button:hover span {
+        color: #1f1810 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button:disabled,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button:disabled p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .stButton > button:disabled span {
+        color: #6b5d4d !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] h1,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] h2,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] h3 {
+        color: var(--rf-escuro) !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] h2,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] h3 {
+        color: var(--rf-marrom) !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .hero-banner h1,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .hero-banner p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .frase-inspiracao p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .badge-completo {
+        color: #fff8f0 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .hero-banner p {
+        color: #f0e4d4 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] input,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] textarea,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] [data-baseweb="select"] {
+        color: #1f1810 !important;
+    }
+
+    /* Sidebar: fundo escuro → texto claro (exceto itens com fundo claro/dourado) */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #1f1810 0%, #3d3225 55%, #5c4a32 100%) !important;
         border-right: 3px solid var(--rf-dourado) !important;
+        color: #faf6f0 !important;
     }
 
-    [data-testid="stSidebar"] * {
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] .stMarkdown p,
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
         color: #faf6f0 !important;
     }
 
@@ -81,14 +151,16 @@ CSS = """
         padding: 0.5rem 0.75rem;
         border-radius: 8px;
         transition: background 0.2s;
+        color: #faf6f0 !important;
     }
 
     [data-testid="stSidebar"] .stRadio label:hover {
         background: rgba(166, 124, 82, 0.35) !important;
+        color: #faf6f0 !important;
     }
 
     [data-testid="stSidebar"] .stRadio label[data-checked="true"],
-    [data-testid="stSidebar"] label:has(input:checked) {
+    [data-testid="stSidebar"] .stRadio label:has(input:checked) {
         background: var(--rf-dourado) !important;
         color: #1f1810 !important;
         font-weight: 700 !important;
@@ -124,8 +196,17 @@ CSS = """
         border: 2px solid var(--rf-dourado-claro);
         border-top: 4px solid var(--rf-dourado);
         box-shadow: 0 6px 20px rgba(92, 74, 50, 0.15);
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         transition: transform 0.2s, box-shadow 0.2s;
+        color: #3d3428;
+    }
+
+    .card-preco h3 {
+        color: var(--rf-marrom) !important;
+    }
+
+    .card-preco p {
+        color: #6b5d4d !important;
     }
 
     .card-preco:hover {
@@ -152,6 +233,74 @@ CSS = """
         border: 1px solid var(--rf-dourado-claro);
     }
 
+    .card-preco-botoes {
+        margin-top: 0.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    div[data-testid="stMarkdownContainer"]:has(.card-preco) ~ div .stButton > button {
+        min-height: 2.85rem;
+        font-size: 0.9rem !important;
+        line-height: 1.3 !important;
+        white-space: normal !important;
+        margin-bottom: 0.35rem;
+    }
+
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button,
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button p,
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button span {
+        background: linear-gradient(135deg, #1f1810, #5c4a32) !important;
+        color: #fff8f0 !important;
+        border: 2px solid var(--rf-dourado-claro) !important;
+        box-shadow: 0 4px 14px rgba(31, 24, 16, 0.35) !important;
+    }
+
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button:hover,
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button:hover p,
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button:hover span {
+        background: linear-gradient(135deg, #5c4a32, #8b6340) !important;
+        color: #fff8f0 !important;
+    }
+
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button:disabled,
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button:disabled p,
+    div[data-testid="stMarkdownContainer"]:has(.btn-completo-wrap) + div .stButton > button:disabled span {
+        background: #8b7355 !important;
+        color: #f5ebe0 !important;
+        border-color: #a67c52 !important;
+        opacity: 0.85;
+    }
+
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button,
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button p,
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button span {
+        background: linear-gradient(135deg, #7d5e3a, #a67c52) !important;
+        color: #fff8f0 !important;
+        border: 2px solid #c9a06c !important;
+        box-shadow: 0 4px 14px rgba(125, 94, 58, 0.3) !important;
+    }
+
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button:hover,
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button:hover p,
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button:hover span {
+        background: linear-gradient(135deg, #a67c52, #c9a06c) !important;
+        color: #1f1810 !important;
+    }
+
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button:disabled,
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button:disabled p,
+    div[data-testid="stMarkdownContainer"]:has(.btn-interiores-wrap) + div .stButton > button:disabled span {
+        background: #c4b8a8 !important;
+        color: #6b5d4d !important;
+        border-color: #b8aa98 !important;
+        opacity: 0.9;
+    }
+
+    .btn-completo-wrap,
+    .btn-interiores-wrap {
+        display: none;
+    }
+
     .metric-box {
         background: linear-gradient(180deg, #ffffff 0%, #f5ebe0 100%);
         border-radius: 12px;
@@ -160,6 +309,7 @@ CSS = """
         border: 2px solid var(--rf-dourado-claro);
         border-bottom: 4px solid var(--rf-dourado);
         box-shadow: 0 4px 14px rgba(92, 74, 50, 0.12);
+        color: #3d3428;
     }
 
     .metric-box .valor {
@@ -186,10 +336,15 @@ CSS = """
         border-left: 5px solid var(--rf-dourado);
         box-shadow: 0 6px 20px rgba(92, 74, 50, 0.12);
         margin-bottom: 1.5rem;
+        color: #3d3428;
     }
 
     .sobre-card h3 {
         color: var(--rf-marrom) !important;
+    }
+
+    .sobre-card p {
+        color: #4a4035 !important;
     }
 
     .equipe-bloco {
@@ -235,6 +390,7 @@ CSS = """
         margin: 2rem 0;
         text-align: center;
         border: 2px solid var(--rf-dourado-claro);
+        color: #fff8f0;
     }
 
     .frase-inspiracao p {
@@ -246,35 +402,6 @@ CSS = """
         line-height: 1.6;
     }
 
-    .contato-info-card {
-        background: linear-gradient(180deg, #ffffff 0%, #faf6f0 100%);
-        border-radius: 12px;
-        padding: 1.5rem;
-        border: 2px solid var(--rf-dourado-claro);
-        border-top: 4px solid var(--rf-dourado);
-        box-shadow: 0 6px 18px rgba(92, 74, 50, 0.14);
-        height: 100%;
-    }
-
-    .contato-info-card h4 {
-        color: var(--rf-dourado) !important;
-        margin-top: 0 !important;
-        font-size: 1.05rem !important;
-        font-weight: 700 !important;
-        border-bottom: 2px solid var(--rf-creme-medio);
-        padding-bottom: 0.5rem;
-    }
-
-    .contato-info-card a {
-        color: var(--rf-marrom);
-        text-decoration: none;
-        font-weight: 600;
-    }
-
-    .contato-info-card a:hover {
-        color: var(--rf-dourado);
-    }
-
     .pagamento-card {
         background: linear-gradient(180deg, #ffffff 0%, #f5ebe0 100%);
         border-radius: 12px;
@@ -283,10 +410,15 @@ CSS = """
         border: 2px solid var(--rf-dourado-claro);
         border-bottom: 4px solid var(--rf-dourado);
         height: 100%;
+        color: #3d3428;
     }
 
     .pagamento-card h4 {
         color: var(--rf-marrom) !important;
+    }
+
+    .pagamento-card p {
+        color: #6b5d4d !important;
     }
 
     .stButton > button {
@@ -336,6 +468,97 @@ CSS = """
         vertical-align: middle;
     }
 
+    .balao-projetos {
+        position: relative;
+        background: linear-gradient(135deg, #ffffff 0%, #faf6f0 100%);
+        border: 2px solid var(--rf-dourado-claro);
+        border-left: 5px solid var(--rf-dourado);
+        border-radius: 16px;
+        padding: 1.5rem 1.75rem 1.25rem;
+        margin-bottom: 1.75rem;
+        box-shadow: 0 8px 24px rgba(92, 74, 50, 0.14);
+    }
+
+    .balao-projetos::after {
+        content: "";
+        position: absolute;
+        bottom: -12px;
+        left: 48px;
+        width: 22px;
+        height: 22px;
+        background: #faf6f0;
+        border-right: 2px solid var(--rf-dourado-claro);
+        border-bottom: 2px solid var(--rf-dourado-claro);
+        transform: rotate(45deg);
+    }
+
+    .balao-projetos-titulo {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--rf-marrom);
+        margin: 0 0 1rem 0;
+    }
+
+    .balao-projetos-colunas {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+        .balao-projetos-colunas {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .balao-coluna h4 {
+        font-family: 'Cormorant Garamond', serif !important;
+        color: var(--rf-dourado) !important;
+        font-size: 1.15rem !important;
+        margin: 0 0 0.5rem 0 !important;
+    }
+
+    .balao-coluna p {
+        font-size: 0.85rem;
+        color: #8b7355 !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-style: italic;
+    }
+
+    .balao-coluna ul {
+        margin: 0;
+        padding-left: 1.1rem;
+        list-style: none;
+    }
+
+    .balao-coluna li {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 0.88rem;
+        color: #4a4035 !important;
+        padding: 0.2rem 0;
+        line-height: 1.45;
+    }
+
+    .balao-coluna li::before {
+        content: "✓ ";
+        color: var(--rf-dourado);
+        font-weight: 700;
+    }
+
+    .balao-coluna-extra li::before {
+        content: "+ ";
+        color: var(--rf-dourado);
+        font-weight: 700;
+    }
+
+    .balao-nota-3d {
+        font-size: 0.8rem;
+        color: #8b7355 !important;
+        margin-top: 0.75rem !important;
+        font-style: italic;
+    }
+
     .stTabs [data-baseweb="tab-list"] {
         border-bottom: 3px solid var(--rf-dourado) !important;
         gap: 0.35rem;
@@ -354,6 +577,11 @@ CSS = """
         background: var(--rf-dourado) !important;
         color: #1f1810 !important;
         border-color: var(--rf-dourado) !important;
+    }
+
+    .stTabs [aria-selected="true"] p,
+    .stTabs [aria-selected="true"] span {
+        color: #1f1810 !important;
     }
 
     div[data-testid="stMetric"] {
@@ -410,6 +638,85 @@ CSS = """
         border-radius: 10px !important;
         border-left-width: 5px !important;
     }
+
+    /* Página Contratar Projeto */
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .secao-contratar h3,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .secao-contratar h4 {
+        color: var(--rf-marrom) !important;
+        font-weight: 600 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .secao-contratar p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .secao-contratar label,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .secao-contratar .stMarkdown p {
+        color: #6b5d4d !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-valores-contratar [data-testid="stMetric"] {
+        background: linear-gradient(180deg, #fff 0%, #f5ebe0 100%);
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-valores-contratar [data-testid="stMetricLabel"],
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-valores-contratar [data-testid="stMetricLabel"] p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-valores-contratar [data-testid="stMetricLabel"] span {
+        color: #8b7355 !important;
+        font-weight: 600 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-valores-contratar [data-testid="stMetricValue"],
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-valores-contratar [data-testid="stMetricValue"] p,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-valores-contratar [data-testid="stMetricValue"] span {
+        color: var(--rf-dourado) !important;
+        font-weight: 700 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .parcela-destaque {
+        font-family: 'Cormorant Garamond', serif !important;
+        font-size: 1.75rem !important;
+        font-weight: 700 !important;
+        color: var(--rf-dourado) !important;
+        margin: 0.25rem 0 0 0 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .pagamento-card h4 {
+        color: var(--rf-dourado) !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .pagamento-card p {
+        color: #8b7355 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .stRadio > label {
+        color: var(--rf-marrom) !important;
+        font-weight: 600 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .stRadio [data-baseweb="radio"] label,
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .stRadio label {
+        color: #6b5d4d !important;
+        background: #faf6f0 !important;
+        border: 1px solid var(--rf-creme-medio) !important;
+        border-radius: 8px !important;
+        padding: 0.45rem 0.85rem !important;
+        margin-right: 0.35rem !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .stRadio label:has(input:checked) {
+        background: var(--rf-dourado) !important;
+        color: #fff8f0 !important;
+        border-color: var(--rf-dourado-claro) !important;
+        font-weight: 700 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-dados-contratar label {
+        color: #8b7355 !important;
+        font-weight: 500 !important;
+    }
+
+    [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-dados-contratar input {
+        color: #4a4035 !important;
+        background-color: #fff !important;
+    }
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
@@ -431,9 +738,9 @@ def criar_df_precos() -> pd.DataFrame:
                 "Categoria": v["categoria"],
                 "Pacote": v["nome"],
                 "Área": v["area"],
-                "Valor Base": v["valor"],
-                "Extra Completo": v.get("completo_extra", 0),
-                "Valor Completo": v["valor"] + v.get("completo_extra", 0),
+                "Arquitetura Simples": v["valor"],
+                "Arquitetura Completo": v["valor"] + v.get("completo_extra", 0),
+                "Interiores": v.get("valor_interiores", 0),
                 "Personalizado": "Sim" if v.get("personalizado") else "Não",
             }
         )
@@ -444,6 +751,22 @@ def exibir_tabela(df: pd.DataFrame):
     st.dataframe(df, use_container_width=True, hide_index=True)
 
 
+def tipo_projeto_item(item: dict) -> str:
+    if item.get("tipo_projeto"):
+        return item["tipo_projeto"]
+    if item.get("projeto_completo"):
+        return "completo"
+    return "simples"
+
+
+def label_tipo_projeto(item: dict) -> str:
+    return {
+        "simples": "Simples de Arquitetura",
+        "completo": "Completo de Arquitetura",
+        "interiores": "Interiores",
+    }.get(tipo_projeto_item(item), "Simples de Arquitetura")
+
+
 def df_carrinho(carrinho: list) -> pd.DataFrame:
     return pd.DataFrame(
         [
@@ -451,7 +774,7 @@ def df_carrinho(carrinho: list) -> pd.DataFrame:
                 "Categoria": item["categoria"],
                 "Pacote": item["variante"],
                 "Área": item["area"],
-                "Tipo": "Completo" if item.get("projeto_completo") else "Base",
+                "Tipo": label_tipo_projeto(item),
                 "Valor": formatar_moeda(valor_item(item)),
             }
             for item in carrinho
@@ -467,7 +790,7 @@ def df_resumo_pedido(carrinho: list) -> pd.DataFrame:
                 "Categoria": proj["categoria"],
                 "Pacote": proj["variante"],
                 "Área": proj["area"],
-                "Tipo": "Completo" if proj.get("projeto_completo") else "Base",
+                "Tipo": label_tipo_projeto(proj),
                 "Valor": formatar_moeda(valor_item(proj)),
             }
             for i, proj in enumerate(carrinho, 1)
@@ -500,14 +823,17 @@ def init_session():
             del st.session_state["projeto_completo"]
 
 
-def item_carrinho_id(cat_id: str, idx: int, completo: bool) -> str:
-    tipo = "comp" if completo else "base"
+def item_carrinho_id(cat_id: str, idx: int, tipo: str) -> str:
     return f"{cat_id}_{idx}_{tipo}"
 
 
 def valor_item(item: dict) -> float:
-    extra = item["completo_extra"] if item.get("projeto_completo") else 0
-    return item["valor_base"] + extra
+    tipo = tipo_projeto_item(item)
+    if tipo == "interiores":
+        return item.get("valor_interiores", item["valor_base"])
+    if tipo == "completo":
+        return item["valor_base"] + item.get("completo_extra", 0)
+    return item["valor_base"]
 
 
 def total_carrinho() -> float:
@@ -534,8 +860,8 @@ def limpar_carrinho():
     st.session_state.pagamento_confirmado = False
 
 
-def item_no_carrinho(cat_id: str, idx: int, completo: bool) -> bool:
-    item_id = item_carrinho_id(cat_id, idx, completo)
+def item_no_carrinho(cat_id: str, idx: int, tipo: str) -> bool:
+    item_id = item_carrinho_id(cat_id, idx, tipo)
     return any(i["id"] == item_id for i in st.session_state.carrinho)
 
 
@@ -547,6 +873,50 @@ def hero(titulo: str, subtitulo: str = ""):
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
+
+
+def _lista_html_itens(itens: list[str]) -> str:
+    return "".join(f"<li>{item}</li>" for item in itens)
+
+
+def balao_tipos_projeto(cat_id: str | None = None):
+    if cat_id is None:
+        simples = itens_projeto_simples("casas")
+        nota_3d = (
+            '<p class="balao-nota-3d">Em Studios, Apartamentos e Comercial, '
+            "o item 3D fachada é substituído por <strong>3D — 1 ambiente escolhido por você</strong>.</p>"
+        )
+    else:
+        simples = itens_projeto_simples(cat_id)
+        nota_3d = ""
+
+    extras = ITENS_PROJETO_COMPLETO_EXTRA
+    completo_intro = (
+        "Tudo do <strong>projeto simples</strong>, mais:"
+        if cat_id
+        else "Tudo do <strong>projeto simples</strong> (conforme a categoria), mais:"
+    )
+
+    st.markdown(
+        f"""
+        <div class="balao-projetos">
+            <p class="balao-projetos-titulo">O que cada projeto inclui</p>
+            <div class="balao-projetos-colunas">
+                <div class="balao-coluna">
+                    <h4>Projeto Simples</h4>
+                    <ul>{_lista_html_itens(simples)}</ul>
+                    {nota_3d}
+                </div>
+                <div class="balao-coluna balao-coluna-extra">
+                    <h4>Projeto Completo</h4>
+                    <p>{completo_intro}</p>
+                    <ul>{_lista_html_itens(extras)}</ul>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def card_preco(variante: dict, categoria: dict, cat_id: str, idx: int):
@@ -566,52 +936,105 @@ def card_preco(variante: dict, categoria: dict, cat_id: str, idx: int):
             <p style="color:#8b7355; font-weight:600; margin-bottom:0.5rem;">{variante['area']}</p>
             <div class="preco-destaque">{formatar_moeda(valor_total)}</div>
             <p style="font-size:0.85rem; color:#6b5d4d; margin:0.25rem 0;">
-                Projeto base com todos os itens inclusos
+                Escolha o tipo de projeto abaixo
             </p>
-            {f'<span class="badge-completo">Projeto completo: + {formatar_moeda(variante["completo_extra"])} = {formatar_moeda(valor_completo)}</span>' if variante.get("completo_extra") else ""}
             {f'<p style="margin-top:0.75rem; font-style:italic; color:#8b7355;">{nota}</p>' if nota else ""}
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    col1, col2 = st.columns(2)
-    no_carrinho_base = item_no_carrinho(cat_id, idx, False)
-    no_carrinho_comp = item_no_carrinho(cat_id, idx, True)
+    no_carrinho_simples = item_no_carrinho(cat_id, idx, "simples")
+    no_carrinho_comp = item_no_carrinho(cat_id, idx, "completo")
+    no_carrinho_interiores = item_no_carrinho(cat_id, idx, "interiores")
+    valor_interiores = variante.get("valor_interiores", 0)
 
-    with col1:
-        label_base = "No carrinho" if no_carrinho_base else "Adicionar ao Carrinho"
-        if st.button(label_base, key=f"sel_{cat_id}_{idx}", use_container_width=True, disabled=no_carrinho_base):
+    label_base = (
+        f"✓ Projeto Simples de Arquitetura — {formatar_moeda(valor_total)} (no carrinho)"
+        if no_carrinho_simples
+        else f"Projeto Simples de Arquitetura — {formatar_moeda(valor_total)}"
+    )
+    if st.button(
+        label_base,
+        key=f"sel_{cat_id}_{idx}",
+        use_container_width=True,
+        disabled=no_carrinho_simples,
+    ):
+        item = {
+            "id": item_carrinho_id(cat_id, idx, "simples"),
+            "categoria_id": cat_id,
+            "categoria": categoria["titulo"],
+            "variante": variante["nome"],
+            "area": variante["area"],
+            "valor_base": variante["valor"],
+            "completo_extra": variante.get("completo_extra", 0),
+            "valor_interiores": valor_interiores,
+            "tipo_projeto": "simples",
+            "projeto_completo": False,
+            "personalizado": personalizado,
+        }
+        if adicionar_ao_carrinho(item):
+            st.toast(f"{variante['nome']} (simples) adicionado ao carrinho!")
+            st.rerun()
+
+    if variante.get("completo_extra"):
+        st.markdown('<div class="btn-completo-wrap"></div>', unsafe_allow_html=True)
+        label_comp = (
+            f"✓ Projeto Completo de Arquitetura — {formatar_moeda(valor_completo)} (no carrinho)"
+            if no_carrinho_comp
+            else f"Projeto Completo de Arquitetura — {formatar_moeda(valor_completo)}"
+        )
+        if st.button(
+            label_comp,
+            key=f"comp_{cat_id}_{idx}",
+            use_container_width=True,
+            disabled=no_carrinho_comp,
+        ):
             item = {
-                "id": item_carrinho_id(cat_id, idx, False),
+                "id": item_carrinho_id(cat_id, idx, "completo"),
                 "categoria_id": cat_id,
                 "categoria": categoria["titulo"],
                 "variante": variante["nome"],
                 "area": variante["area"],
                 "valor_base": variante["valor"],
                 "completo_extra": variante.get("completo_extra", 0),
-                "projeto_completo": False,
-                "personalizado": personalizado,
-            }
-            if adicionar_ao_carrinho(item):
-                st.toast(f"{variante['nome']} adicionado ao carrinho!")
-                st.rerun()
-    with col2:
-        label_comp = "No carrinho" if no_carrinho_comp else "Adicionar Completo"
-        if st.button(label_comp, key=f"comp_{cat_id}_{idx}", use_container_width=True, disabled=no_carrinho_comp):
-            item = {
-                "id": item_carrinho_id(cat_id, idx, True),
-                "categoria_id": cat_id,
-                "categoria": categoria["titulo"],
-                "variante": variante["nome"],
-                "area": variante["area"],
-                "valor_base": variante["valor"],
-                "completo_extra": variante.get("completo_extra", 0),
+                "valor_interiores": valor_interiores,
+                "tipo_projeto": "completo",
                 "projeto_completo": True,
                 "personalizado": personalizado,
             }
             if adicionar_ao_carrinho(item):
                 st.toast(f"{variante['nome']} (completo) adicionado!")
+                st.rerun()
+
+    if valor_interiores:
+        st.markdown('<div class="btn-interiores-wrap"></div>', unsafe_allow_html=True)
+        label_int = (
+            f"✓ Projeto de Interiores — {formatar_moeda(valor_interiores)} (no carrinho)"
+            if no_carrinho_interiores
+            else f"Projeto de Interiores — {formatar_moeda(valor_interiores)}"
+        )
+        if st.button(
+            label_int,
+            key=f"int_{cat_id}_{idx}",
+            use_container_width=True,
+            disabled=no_carrinho_interiores,
+        ):
+            item = {
+                "id": item_carrinho_id(cat_id, idx, "interiores"),
+                "categoria_id": cat_id,
+                "categoria": categoria["titulo"],
+                "variante": variante["nome"],
+                "area": variante["area"],
+                "valor_base": variante["valor"],
+                "completo_extra": variante.get("completo_extra", 0),
+                "valor_interiores": valor_interiores,
+                "tipo_projeto": "interiores",
+                "projeto_completo": False,
+                "personalizado": personalizado,
+            }
+            if adicionar_ao_carrinho(item):
+                st.toast(f"{variante['nome']} (interiores) adicionado!")
                 st.rerun()
 
 
@@ -690,88 +1113,10 @@ def conteudo_sobre():
         unsafe_allow_html=True,
     )
 
-
-def conteudo_contato():
-    st.markdown("## Contato")
-    st.markdown(
-        "Entre em contato com a **RF Arquitetura & Interiores**. "
-        "Teremos prazer em transformar seus sonhos em realidade."
-    )
-
-    col_logo, col_info = st.columns([1, 3])
-    with col_logo:
-        st.image(EMPRESA["logo"], width=140)
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown(
-            f"""
-            <div class="contato-info-card">
-                <h4>Telefones</h4>
-                <p><a href="tel:+{CONTATO['telefone_1_raw']}">{CONTATO['telefone_1']}</a></p>
-                <p><a href="tel:+{CONTATO['telefone_2_raw']}">{CONTATO['telefone_2']}</a></p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with col2:
-        st.markdown(
-            f"""
-            <div class="contato-info-card">
-                <h4>E-mail</h4>
-                <p><a href="mailto:{CONTATO['email']}">{CONTATO['email']}</a></p>
-                <p style="margin-top:0.75rem;"><a href="https://wa.me/{EMPRESA['whatsapp']}" target="_blank">WhatsApp</a></p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    st.markdown("---")
-
-    st.markdown("### Envie sua mensagem")
-
-    with st.form("form_contato", clear_on_submit=True):
-        c1, c2 = st.columns(2)
-        with c1:
-            nome = st.text_input("Nome", placeholder="Seu nome")
-        with c2:
-            sobrenome = st.text_input("Sobrenome", placeholder="Seu sobrenome")
-        email = st.text_input("E-mail", placeholder="seu@email.com")
-        mensagem = st.text_area("Mensagem", placeholder="Como podemos ajudar?", height=150)
-        enviado = st.form_submit_button("Enviar", use_container_width=True)
-
-    if enviado:
-        if nome.strip() and email.strip() and mensagem.strip():
-            nome_completo = f"{nome} {sobrenome}".strip()
-            assunto = f"Contato pelo site - {nome_completo}"
-            corpo = (
-                f"Nome: {nome_completo}%0A"
-                f"E-mail: {email}%0A%0A"
-                f"Mensagem:%0A{mensagem.replace(chr(10), '%0A')}"
-            )
-            mailto = (
-                f"mailto:{CONTATO['email']}?subject={assunto.replace(' ', '%20')}&body={corpo}"
-            )
-            st.success("Obrigada pelo envio! Clique abaixo para enviar pelo seu e-mail.")
-            st.link_button("Abrir e-mail para enviar", mailto, use_container_width=True)
-
-            whatsapp_msg = (
-                f"Olá! Meu nome é {nome_completo}.%0A%0A{mensagem.replace(chr(10), '%0A')}"
-            )
-            st.link_button(
-                "Enviar pelo WhatsApp",
-                f"https://wa.me/{EMPRESA['whatsapp']}?text={whatsapp_msg}",
-                use_container_width=True,
-            )
-        else:
-            st.error("Preencha nome, e-mail e mensagem para enviar.")
-
     st.markdown("---")
     st.link_button(
-        "Visitar página de contato no site",
-        EMPRESA["contato_url"],
+        "Fale conosco — (11) 96898-8548",
+        f"https://wa.me/{EMPRESA['whatsapp']}",
         use_container_width=True,
     )
 
@@ -822,9 +1167,7 @@ def pagina_inicio():
         "Projetos 100% personalizados — do conceito à execução",
     )
 
-    tab_sobre, tab_portfolio, tab_contato = st.tabs(
-        ["Sobre", "Portfólio", "Contato"]
-    )
+    tab_sobre, tab_portfolio = st.tabs(["Sobre", "Portfólio"])
 
     with tab_sobre:
         conteudo_sobre()
@@ -832,12 +1175,11 @@ def pagina_inicio():
     with tab_portfolio:
         conteudo_portfolio()
 
-    with tab_contato:
-        conteudo_contato()
-
 
 def pagina_catalogo():
     hero("Catálogo de Projetos", "Escolha um ou mais pacotes e adicione ao carrinho")
+
+    balao_tipos_projeto()
 
     qtd = len(st.session_state.carrinho)
     if qtd > 0:
@@ -854,16 +1196,6 @@ def pagina_catalogo():
     for tab, (cat_id, cat) in zip(tabs, CATEGORIAS.items()):
         with tab:
             st.markdown(f"*{cat['descricao']}*")
-            st.markdown("**Itens inclusos:**")
-            cols_itens = st.columns(2)
-            metade = len(cat["itens"]) // 2 + len(cat["itens"]) % 2
-            with cols_itens[0]:
-                for item in cat["itens"][:metade]:
-                    st.markdown(f'<p class="item-lista">{item}</p>', unsafe_allow_html=True)
-            with cols_itens[1]:
-                for item in cat["itens"][metade:]:
-                    st.markdown(f'<p class="item-lista">{item}</p>', unsafe_allow_html=True)
-
             st.markdown("---")
             cols = st.columns(min(len(cat["variantes"]), 3))
             for idx, var in enumerate(cat["variantes"]):
@@ -945,14 +1277,17 @@ def pagina_vendas():
     col1, col2 = st.columns([2, 1])
 
     with col1:
+        st.markdown('<div class="secao-contratar">', unsafe_allow_html=True)
         st.markdown("### Resumo do Pedido")
         exibir_tabela(df_resumo_pedido(st.session_state.carrinho))
 
         if st.button("Editar carrinho", key="vendas_editar_carrinho"):
             st.session_state.nav_page = "Carrinho"
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with col2:
+        st.markdown('<div class="secao-contratar bloco-valores-contratar">', unsafe_allow_html=True)
         st.markdown("### Valores")
         for proj in st.session_state.carrinho:
             st.metric(
@@ -964,9 +1299,14 @@ def pagina_vendas():
         st.markdown("---")
         st.markdown("**Parcelamento (cartão 12x):**")
         parcela = valor_total / 12
-        st.markdown(f"### {formatar_moeda(parcela)}/mês")
+        st.markdown(
+            f'<p class="parcela-destaque">{formatar_moeda(parcela)}/mês</p>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown('<div class="secao-contratar bloco-dados-contratar">', unsafe_allow_html=True)
     st.markdown("### Seus Dados")
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -981,8 +1321,10 @@ def pagina_vendas():
         st.session_state.cliente_telefone = st.text_input(
             "Telefone / WhatsApp", value=st.session_state.cliente_telefone
         )
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown('<div class="secao-contratar bloco-pagamento-contratar">', unsafe_allow_html=True)
     st.markdown("### Forma de Pagamento")
 
     cols_pag = st.columns(3)
@@ -1005,6 +1347,7 @@ def pagina_vendas():
         key="forma_pag_radio",
     )
     st.session_state.forma_pagamento = forma
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -1040,7 +1383,7 @@ def pagina_vendas():
 
         projetos_msg = "%0A".join(
             f"• {p['categoria']} — {p['variante']} ({p['area']}) — "
-            f"{'Completo' if p.get('projeto_completo') else 'Base'} — {formatar_moeda(valor_item(p))}"
+            f"{label_tipo_projeto(p)} — {formatar_moeda(valor_item(p))}"
             for p in st.session_state.carrinho
         )
         whatsapp_msg = (
@@ -1069,23 +1412,25 @@ def pagina_dashboard():
 
     df = criar_df_precos()
     df_exibicao = formatar_colunas_moeda(
-        df, ["Valor Base", "Extra Completo", "Valor Completo"]
+        df, ["Arquitetura Simples", "Arquitetura Completo", "Interiores"]
     )
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric("Total de Pacotes", len(df))
     with col2:
-        st.metric("Ticket Médio (Base)", formatar_moeda(df["Valor Base"].mean()))
+        st.metric("Ticket Médio (Arq. Simples)", formatar_moeda(df["Arquitetura Simples"].mean()))
     with col3:
-        st.metric("Ticket Médio (Completo)", formatar_moeda(df["Valor Completo"].mean()))
+        st.metric("Ticket Médio (Arq. Completo)", formatar_moeda(df["Arquitetura Completo"].mean()))
+    with col4:
+        st.metric("Ticket Médio (Interiores)", formatar_moeda(df["Interiores"].mean()))
 
     st.markdown("### Tabela de Preços Completa")
     exibir_tabela(df_exibicao)
 
     st.markdown("### Valores por Categoria")
-    chart_data = df.groupby("Categoria")[["Valor Base", "Valor Completo"]].mean()
-    chart_data.columns = ["Valor Base (médio)", "Valor Completo (médio)"]
+    chart_data = df.groupby("Categoria")[["Arquitetura Simples", "Arquitetura Completo", "Interiores"]].mean()
+    chart_data.columns = ["Arq. Simples (médio)", "Arq. Completo (médio)", "Interiores (médio)"]
     st.bar_chart(chart_data)
 
     st.markdown("### Exportar")
