@@ -20,7 +20,7 @@ echo No Render:
 echo 1. New ^> Blueprint (ou Web Service)
 echo 2. Conecte o repositorio "vendas-de-projetos-arquitetura"
 start https://github.com/leleostonks/vendas-de-projetos-arquitetura
-echo 3. Start Command = streamlit run app.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
+echo 3. Start Command = python -m streamlit run app.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true
 echo 4. Manual Deploy ^> Deploy latest commit
 echo.
 pause
