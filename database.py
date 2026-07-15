@@ -53,6 +53,14 @@ ITENS_PROJETO_COMPLETO_EXTRA = [
     "Planta de Revestimento",
 ]
 
+ITENS_PROJETO_INTERIORES = [
+    "Briefing",
+    "Mood board",
+    "Apresentação com valores dos produtos usados e similares e indicação de onde comprar",
+    "Projeto luminotécnico diferenciado",
+    "Imagens 3D de todos os ambientes",
+]
+
 ITENS_3D_AMBIENTE = "3D — 1 ambiente escolhido por você"
 
 ITENS_BASE_CASA = ITENS_PROJETO_SIMPLES
@@ -214,6 +222,10 @@ def itens_projeto_simples(cat_id: str = "casas") -> list[str]:
 
 def itens_projeto_completo(cat_id: str = "casas") -> list[str]:
     return itens_projeto_simples(cat_id) + ITENS_PROJETO_COMPLETO_EXTRA
+
+
+def itens_projeto_interiores() -> list[str]:
+    return list(ITENS_PROJETO_INTERIORES)
 
 
 def formatar_moeda(valor: float) -> str:

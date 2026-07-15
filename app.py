@@ -13,6 +13,7 @@ from database import (
     FORMAS_PAGAMENTO,
     FRASE_INSPIRACIONAL,
     ITENS_PROJETO_COMPLETO_EXTRA,
+    ITENS_PROJETO_INTERIORES,
     SOBRE_ARQUITETA,
     SOBRE_GESTOR,
     formatar_moeda,
@@ -502,11 +503,11 @@ CSS = """
 
     .balao-projetos-colunas {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 1.25rem;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 992px) {
         .balao-projetos-colunas {
             grid-template-columns: 1fr;
         }
@@ -548,6 +549,12 @@ CSS = """
 
     .balao-coluna-extra li::before {
         content: "+ ";
+        color: var(--rf-dourado);
+        font-weight: 700;
+    }
+
+    .balao-coluna-interiores li::before {
+        content: "◆ ";
         color: var(--rf-dourado);
         font-weight: 700;
     }
@@ -891,6 +898,7 @@ def balao_tipos_projeto(cat_id: str | None = None):
         nota_3d = ""
 
     extras = ITENS_PROJETO_COMPLETO_EXTRA
+    interiores = ITENS_PROJETO_INTERIORES
     completo_intro = (
         "Tudo do <strong>projeto simples</strong>, mais:"
         if cat_id
@@ -903,14 +911,18 @@ def balao_tipos_projeto(cat_id: str | None = None):
             <p class="balao-projetos-titulo">O que cada projeto inclui</p>
             <div class="balao-projetos-colunas">
                 <div class="balao-coluna">
-                    <h4>Projeto Simples</h4>
+                    <h4>Projeto Simples de Arquitetura</h4>
                     <ul>{_lista_html_itens(simples)}</ul>
                     {nota_3d}
                 </div>
                 <div class="balao-coluna balao-coluna-extra">
-                    <h4>Projeto Completo</h4>
+                    <h4>Projeto Completo de Arquitetura</h4>
                     <p>{completo_intro}</p>
                     <ul>{_lista_html_itens(extras)}</ul>
+                </div>
+                <div class="balao-coluna balao-coluna-interiores">
+                    <h4>Projeto de Interiores</h4>
+                    <ul>{_lista_html_itens(interiores)}</ul>
                 </div>
             </div>
         </div>
