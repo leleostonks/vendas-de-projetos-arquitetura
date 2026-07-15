@@ -193,21 +193,36 @@ CSS = """
     .card-preco {
         background: linear-gradient(180deg, #ffffff 0%, #faf6f0 100%);
         border-radius: 12px;
-        padding: 1.5rem;
+        padding: 1.25rem 1.5rem;
         border: 2px solid var(--rf-dourado-claro);
         border-top: 4px solid var(--rf-dourado);
         box-shadow: 0 6px 20px rgba(92, 74, 50, 0.15);
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
         transition: transform 0.2s, box-shadow 0.2s;
         color: #3d3428;
+        min-height: 9.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
     }
 
     .card-preco h3 {
         color: var(--rf-marrom) !important;
+        margin-bottom: 0.35rem !important;
     }
 
-    .card-preco p {
+    .card-preco .card-area {
+        color: #8b7355 !important;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+        font-size: 0.95rem;
+    }
+
+    .card-preco .card-subtitulo {
+        font-size: 0.85rem;
         color: #6b5d4d !important;
+        margin: 0.35rem 0 0 0;
     }
 
     .card-preco:hover {
@@ -300,6 +315,21 @@ CSS = """
     .btn-completo-wrap,
     .btn-interiores-wrap {
         display: none;
+    }
+
+    div[data-testid="stTabs"] div[data-testid="stHorizontalBlock"] {
+        align-items: flex-start !important;
+        gap: 1.25rem !important;
+    }
+
+    div[data-testid="stTabs"] div[data-testid="column"] {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .catalogo-pacote-botoes {
+        width: 100%;
+        margin-bottom: 1.5rem;
     }
 
     .metric-box {
@@ -939,22 +969,20 @@ def card_preco(variante: dict, categoria: dict, cat_id: str, idx: int):
         valor_completo = valor_total
 
     personalizado = variante.get("personalizado", False)
-    nota = variante.get("nota", "")
 
     st.markdown(
         f"""
         <div class="card-preco">
-            <h3 style="margin-top:0;">{variante['nome']}</h3>
-            <p style="color:#8b7355; font-weight:600; margin-bottom:0.5rem;">{variante['area']}</p>
+            <h3>{variante['nome']}</h3>
+            <p class="card-area">{variante['area']}</p>
             <div class="preco-destaque">{formatar_moeda(valor_total)}</div>
-            <p style="font-size:0.85rem; color:#6b5d4d; margin:0.25rem 0;">
-                Escolha o tipo de projeto abaixo
-            </p>
-            {f'<p style="margin-top:0.75rem; font-style:italic; color:#8b7355;">{nota}</p>' if nota else ""}
+            <p class="card-subtitulo">Escolha o tipo de projeto abaixo</p>
         </div>
         """,
         unsafe_allow_html=True,
     )
+
+    st.markdown('<div class="catalogo-pacote-botoes">', unsafe_allow_html=True)
 
     no_carrinho_simples = item_no_carrinho(cat_id, idx, "simples")
     no_carrinho_comp = item_no_carrinho(cat_id, idx, "completo")
@@ -1048,6 +1076,8 @@ def card_preco(variante: dict, categoria: dict, cat_id: str, idx: int):
             if adicionar_ao_carrinho(item):
                 st.toast(f"{variante['nome']} (interiores) adicionado!")
                 st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def conteudo_sobre():
@@ -1209,9 +1239,10 @@ def pagina_catalogo():
         with tab:
             st.markdown(f"*{cat['descricao']}*")
             st.markdown("---")
-            cols = st.columns(min(len(cat["variantes"]), 3))
+            num_cols = min(len(cat["variantes"]), 2)
+            cols = st.columns(num_cols, gap="large")
             for idx, var in enumerate(cat["variantes"]):
-                with cols[idx % len(cols)]:
+                with cols[idx % num_cols]:
                     card_preco(var, cat, cat_id, idx)
 
 
