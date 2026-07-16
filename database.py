@@ -28,7 +28,7 @@ atender às necessidades e desejos de seus clientes.
 """
 
 SOBRE_GESTOR = """
-Igor Henrique — profissional responsável pela gestão administrativa e pelo acompanhamento de obras, 
+Igor Henrique profissional responsável pela gestão administrativa e pelo acompanhamento de obras, 
 com atuação versátil e integrada. Experiência em controle financeiro, emissão de documentos, 
 contratos, apoio aos setores de compras, além da supervisão de cronogramas, equipes e materiais 
 em campo. Organizado, comprometido e com visão ampla de processos, assegura a execução eficiente 

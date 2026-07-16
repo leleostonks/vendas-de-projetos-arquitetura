@@ -1,4 +1,6 @@
 import importlib
+import json
+from urllib.parse import quote
 
 import pandas as pd
 import streamlit as st
@@ -23,9 +25,10 @@ from database import (
 )
 
 st.set_page_config(
-    page_title="RF Arquitetura — Dashboard de Vendas",
+    page_title="RF Arquitetura & Interiores",
+    page_icon=EMPRESA["logo"],
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="auto",
 )
 
 NAV_MIGRACAO = {
@@ -754,9 +757,204 @@ CSS = """
         color: #4a4035 !important;
         background-color: #fff !important;
     }
+
+    /* Android e iOS — layout responsivo */
+    @media (max-width: 768px) {
+        [data-testid="stMain"] .block-container {
+            padding-left: 0.85rem !important;
+            padding-right: 0.85rem !important;
+            padding-top: 1rem !important;
+            max-width: 100% !important;
+        }
+
+        [data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+
+        [data-testid="column"] {
+            width: 100% !important;
+            min-width: 100% !important;
+            flex: 1 1 100% !important;
+        }
+
+        .hero-banner {
+            padding: 1.35rem 1rem !important;
+            margin-bottom: 1.25rem !important;
+        }
+
+        .hero-banner h1 {
+            font-size: 1.75rem !important;
+            line-height: 1.15 !important;
+        }
+
+        .hero-banner p {
+            font-size: 0.95rem !important;
+        }
+
+        .balao-projetos {
+            padding: 1.1rem 1rem !important;
+            margin-bottom: 1.25rem !important;
+        }
+
+        .balao-projetos-titulo {
+            font-size: 1.15rem !important;
+        }
+
+        .balao-projetos-colunas {
+            grid-template-columns: 1fr !important;
+        }
+
+        .card-preco {
+            min-height: auto !important;
+            padding: 1rem !important;
+        }
+
+        .preco-destaque {
+            font-size: 1.55rem !important;
+        }
+
+        .stButton > button,
+        div[data-testid="stMarkdownContainer"]:has(.card-preco) ~ div .stButton > button {
+            min-height: 3.1rem !important;
+            font-size: 0.82rem !important;
+            padding: 0.65rem 0.75rem !important;
+        }
+
+        .stTabs [data-baseweb="tab-list"] {
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            min-width: max-content !important;
+            font-size: 0.82rem !important;
+        }
+
+        [data-testid="stSidebar"] {
+            min-width: min(18rem, 88vw) !important;
+        }
+
+        [data-testid="stSidebar"] .stRadio label {
+            min-height: 2.75rem !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        .equipe-foto {
+            width: min(100%, 260px) !important;
+            height: auto !important;
+            min-height: 300px !important;
+        }
+
+        .metric-box .valor {
+            font-size: 1.55rem !important;
+        }
+
+        .frase-inspiracao p {
+            font-size: 1.15rem !important;
+        }
+
+        .pagamento-card {
+            margin-bottom: 0.5rem;
+        }
+
+        [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .stRadio [data-baseweb="radio"] label,
+        [data-testid="stAppViewContainer"] [data-testid="stMain"] .bloco-pagamento-contratar .stRadio label {
+            width: 100% !important;
+            margin: 0 0 0.4rem 0 !important;
+            text-align: center !important;
+        }
+
+        [data-testid="stAppViewContainer"] [data-testid="stMain"] .parcela-destaque {
+            font-size: 1.4rem !important;
+        }
+
+        iframe {
+            max-width: 100% !important;
+        }
+
+        .dica-instalar-app {
+            display: block !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-banner h1 {
+            font-size: 1.5rem !important;
+        }
+
+        .stButton > button {
+            font-size: 0.78rem !important;
+        }
+    }
+
+    .dica-instalar-app {
+        display: none;
+        background: rgba(166, 124, 82, 0.15);
+        border: 1px solid var(--rf-dourado-claro);
+        border-radius: 10px;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.78rem;
+        color: #f0e4d4 !important;
+        line-height: 1.45;
+        margin-top: 0.5rem;
+    }
 </style>
 """
 st.markdown(CSS, unsafe_allow_html=True)
+
+
+def inject_mobile_meta():
+    manifest = {
+        "name": "RF Arquitetura & Interiores",
+        "short_name": "RF Arquitetura",
+        "description": "Catálogo e contratação de projetos de arquitetura e interiores",
+        "start_url": "/",
+        "scope": "/",
+        "display": "standalone",
+        "orientation": "any",
+        "background_color": "#faf6f0",
+        "theme_color": "#a67c52",
+        "lang": "pt-BR",
+        "icons": [
+            {
+                "src": EMPRESA["logo"],
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any",
+            },
+            {
+                "src": EMPRESA["logo"],
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "maskable",
+            },
+        ],
+    }
+    manifest_uri = "data:application/manifest+json," + quote(
+        json.dumps(manifest, ensure_ascii=False)
+    )
+    logo = EMPRESA["logo"]
+
+    st.markdown(
+        f"""
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="RF Arquitetura">
+        <meta name="theme-color" content="#a67c52">
+        <meta name="format-detection" content="telephone=yes">
+        <link rel="manifest" href="{manifest_uri}">
+        <link rel="apple-touch-icon" href="{logo}">
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+inject_mobile_meta()
 
 
 def formatar_colunas_moeda(df: pd.DataFrame, colunas: list[str]) -> pd.DataFrame:
@@ -1132,7 +1330,7 @@ def conteudo_sobre():
             <div class="equipe-bloco">
                 <img src="{EMPRESA['foto_gestor']}" class="equipe-foto"
                      alt="{EMPRESA['gestor']}"/>
-                <p class="equipe-legenda">{EMPRESA['gestor']}<br>Gestão &amp; Acompanhamento de Obras</p>
+                <p class="equipe-legenda">{EMPRESA['gestor']}<br>profissional responsável</p>
                 <div class="sobre-card">
                     <h3>{EMPRESA['gestor']}</h3>
                     <p>{SOBRE_GESTOR.strip()}</p>
@@ -1153,13 +1351,6 @@ def conteudo_sobre():
     st.markdown(
         f'<div class="frase-inspiracao"><p>&ldquo;{FRASE_INSPIRACIONAL}&rdquo;</p></div>',
         unsafe_allow_html=True,
-    )
-
-    st.markdown("---")
-    st.link_button(
-        "Fale conosco — (11) 96898-8548",
-        f"https://wa.me/{EMPRESA['whatsapp']}",
-        use_container_width=True,
     )
 
 
@@ -1239,11 +1430,14 @@ def pagina_catalogo():
         with tab:
             st.markdown(f"*{cat['descricao']}*")
             st.markdown("---")
-            num_cols = min(len(cat["variantes"]), 2)
-            cols = st.columns(num_cols, gap="large")
-            for idx, var in enumerate(cat["variantes"]):
-                with cols[idx % num_cols]:
-                    card_preco(var, cat, cat_id, idx)
+            variantes = cat["variantes"]
+            for i in range(0, len(variantes), 2):
+                cols = st.columns(2, gap="large")
+                for j, col in enumerate(cols):
+                    idx = i + j
+                    if idx < len(variantes):
+                        with col:
+                            card_preco(variantes[idx], cat, cat_id, idx)
 
 
 def pagina_carrinho():
@@ -1543,6 +1737,14 @@ def main():
             st.caption("Carrinho vazio")
 
         st.markdown("---")
+        st.markdown(
+            '<p class="dica-instalar-app">'
+            "📱 <strong>Instalar no celular:</strong> "
+            "Android → menu ⋮ → <em>Adicionar à tela inicial</em>. "
+            "iPhone → compartilhar ⎋ → <em>Adicionar à Tela de Início</em>."
+            "</p>",
+            unsafe_allow_html=True,
+        )
         st.caption(f"© 2026 {EMPRESA['nome']}")
 
     paginas[st.session_state.nav_page]()
