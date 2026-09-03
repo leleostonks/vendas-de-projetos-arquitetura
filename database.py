@@ -1,5 +1,10 @@
 """Dados de projetos, preços e informações da RF Arquitetura."""
 
+import base64
+from pathlib import Path
+
+_BASE_DIR = Path(__file__).parent
+
 EMPRESA = {
     "nome": "RF Arquitetura & Interiores",
     "arquiteta": "Rachel Fernandes",
@@ -11,6 +16,8 @@ EMPRESA = {
     "logo": "https://static.wixstatic.com/media/b828b7_1fa3272fbe8246db97934eb79c7e0949~mv2.png/v1/fill/w_199,h_199,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/a-removebg-preview.png",
     "foto_arquiteta": "https://static.wixstatic.com/media/b828b7_574b980973514a9a8cec80d6fb975dbd~mv2.jpeg/v1/crop/x_29,y_0,w_299,h_481/fill/w_419,h_668,al_c,lg_1,q_80,enc_avif,quality_auto/b828b7_574b980973514a9a8cec80d6fb975dbd~mv2.jpeg",
     "foto_gestor": "https://static.wixstatic.com/media/b828b7_7b862c5225e8485cb13849a8de09ffe3~mv2.jpg/v1/crop/x_0,y_32,w_478,h_757/fill/w_478,h_713,al_c,q_80,enc_avif,quality_auto/Imagem%20do%20WhatsApp%20de%202025-06-18%20%C3%A0(s)%2012_25_21_1ce60db6.jpg",
+    "rita_cassia": "Rita de Cássia",
+    "foto_rita_cassia": "static/foto_rita_cassia.png",
 }
 
 FRASE_INSPIRACIONAL = (
@@ -33,6 +40,16 @@ com atuação versátil e integrada. Experiência em controle financeiro, emiss�
 contratos, apoio aos setores de compras, além da supervisão de cronogramas, equipes e materiais 
 em campo. Organizado, comprometido e com visão ampla de processos, assegura a execução eficiente 
 dos projetos, dentro dos prazos e padrões de qualidade da empresa.
+"""
+
+SOBRE_RITA = """
+Graduada em Arquitetura e Urbanismo pela Universidade Nove de Julho, adquiri experiência 
+atuando em diversos escritórios de arquitetura, com vivência em diferentes segmentos, 
+como projetos institucionais e residenciais, além da gestão e acompanhamento de obras. 
+Essas experiências contribuíram para o desenvolvimento da minha autonomia profissional 
+e ampliaram minha capacidade de atuar em diferentes áreas. Em parceria com outros 
+profissionais do setor, tive a oportunidade de planejar e executar projetos de forma 
+independente, desenvolvendo soluções alinhadas às necessidades de cada cliente.
 """
 
 ITENS_PROJETO_SIMPLES = [
@@ -228,6 +245,17 @@ def itens_projeto_interiores() -> list[str]:
 
 def formatar_moeda(valor: float) -> str:
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+
+def foto_src(caminho: str, fallback: str | None = None) -> str:
+    if caminho.startswith(("http://", "https://", "data:")):
+        return caminho
+    path = _BASE_DIR / caminho
+    if path.is_file():
+        mime = "image/png" if path.suffix.lower() == ".png" else "image/jpeg"
+        encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+        return f"data:{mime};base64,{encoded}"
+    return fallback or caminho
 
 
 def listar_todas_variantes() -> list[dict]:

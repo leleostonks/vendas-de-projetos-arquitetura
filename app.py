@@ -18,7 +18,9 @@ from database import (
     ITENS_PROJETO_INTERIORES,
     SOBRE_ARQUITETA,
     SOBRE_GESTOR,
+    SOBRE_RITA,
     formatar_moeda,
+    foto_src,
     itens_projeto_simples,
     listar_todas_variantes,
     url_portfolio_embed,
@@ -1306,9 +1308,9 @@ def conteudo_sobre():
 
     st.markdown("---")
 
-    col_esq, col_dir = st.columns(2, gap="large")
+    col1, col2, col3 = st.columns(3, gap="large")
 
-    with col_esq:
+    with col1:
         st.markdown(
             f"""
             <div class="equipe-bloco">
@@ -1324,16 +1326,32 @@ def conteudo_sobre():
             unsafe_allow_html=True,
         )
 
-    with col_dir:
+    with col2:
         st.markdown(
             f"""
             <div class="equipe-bloco">
                 <img src="{EMPRESA['foto_gestor']}" class="equipe-foto"
                      alt="{EMPRESA['gestor']}"/>
-                <p class="equipe-legenda">{EMPRESA['gestor']}<br>profissional responsável</p>
+                <p class="equipe-legenda">{EMPRESA['gestor']}<br>Profissional responsável</p>
                 <div class="sobre-card">
                     <h3>{EMPRESA['gestor']}</h3>
                     <p>{SOBRE_GESTOR.strip()}</p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with col3:
+        st.markdown(
+            f"""
+            <div class="equipe-bloco">
+                <img src="{foto_src(EMPRESA['foto_rita_cassia'], EMPRESA['logo'])}" class="equipe-foto"
+                     alt="{EMPRESA['rita_cassia']}"/>
+                <p class="equipe-legenda">{EMPRESA['rita_cassia']}<br>Arquiteta &amp; Urbanista</p>
+                <div class="sobre-card">
+                    <h3>{EMPRESA['rita_cassia']}</h3>
+                    <p>{SOBRE_RITA.strip()}</p>
                 </div>
             </div>
             """,
