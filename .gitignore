@@ -5,3 +5,7 @@ __pycache__/
 venv/
 *.db
 .streamlit/secrets.toml
+data/
+static/projetos_prontos/
+.claude/
+streamlit_log.txt

@@ -1,9 +1,15 @@
 """Dados de projetos, preços e informações da RF Arquitetura."""
 
 import base64
+import json
 from pathlib import Path
 
 _BASE_DIR = Path(__file__).parent
+
+PROJETOS_PRONTOS_FILE = _BASE_DIR / "data" / "projetos_prontos.json"
+PROJETOS_PRONTOS_IMG_DIR = _BASE_DIR / "static" / "projetos_prontos"
+CONFIG_EDITAVEL_FILE = _BASE_DIR / "data" / "config_editavel.json"
+COMPRAS_FILE = _BASE_DIR / "data" / "compras.json"
 
 EMPRESA = {
     "nome": "RF Arquitetura & Interiores",
@@ -18,6 +24,7 @@ EMPRESA = {
     "foto_gestor": "https://static.wixstatic.com/media/b828b7_7b862c5225e8485cb13849a8de09ffe3~mv2.jpg/v1/crop/x_0,y_32,w_478,h_757/fill/w_478,h_713,al_c,q_80,enc_avif,quality_auto/Imagem%20do%20WhatsApp%20de%202025-06-18%20%C3%A0(s)%2012_25_21_1ce60db6.jpg",
     "rita_cassia": "Rita de Cássia",
     "foto_rita_cassia": "static/foto_rita_cassia.png",
+    "chave_pix": "",
 }
 
 FRASE_INSPIRACIONAL = (
@@ -83,12 +90,6 @@ ITENS_3D_AMBIENTE = "3D — 1 ambiente escolhido por você"
 ITENS_BASE_CASA = ITENS_PROJETO_SIMPLES
 
 ITENS_BASE_STUDIO_APT_COM = ITENS_PROJETO_SIMPLES[:-1] + [ITENS_3D_AMBIENTE]
-
-FORMAS_PAGAMENTO = [
-    {"nome": "PIX", "descricao": "Pagamento instantâneo com desconto"},
-    {"nome": "Cartão de Crédito", "descricao": "Parcelamento em até 12x sem juros"},
-    {"nome": "Cartão de Débito", "descricao": "Débito à vista"},
-]
 
 CATEGORIAS = {
     "casas": {
@@ -258,9 +259,25 @@ def foto_src(caminho: str, fallback: str | None = None) -> str:
     return fallback or caminho
 
 
+def carregar_projetos_prontos() -> list[dict]:
+    if not PROJETOS_PRONTOS_FILE.is_file():
+        return []
+    try:
+        return json.loads(PROJETOS_PRONTOS_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def salvar_projetos_prontos(projetos: list[dict]) -> None:
+    PROJETOS_PRONTOS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    PROJETOS_PRONTOS_FILE.write_text(
+        json.dumps(projetos, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
 def listar_todas_variantes() -> list[dict]:
     resultado = []
-    for cat_id, cat in CATEGORIAS.items():
+    for cat_id, cat in get_categorias().items():
         for var in cat["variantes"]:
             resultado.append(
                 {
@@ -270,3 +287,104 @@ def listar_todas_variantes() -> list[dict]:
                 }
             )
     return resultado
+
+
+def carregar_overrides() -> dict:
+    if not CONFIG_EDITAVEL_FILE.is_file():
+        return {}
+    try:
+        return json.loads(CONFIG_EDITAVEL_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def salvar_overrides(overrides: dict) -> None:
+    CONFIG_EDITAVEL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    CONFIG_EDITAVEL_FILE.write_text(
+        json.dumps(overrides, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def get_empresa() -> dict:
+    return {**EMPRESA, **carregar_overrides().get("empresa", {})}
+
+
+def salvar_empresa_overrides(campos: dict) -> None:
+    overrides = carregar_overrides()
+    overrides.setdefault("empresa", {}).update(campos)
+    salvar_overrides(overrides)
+
+
+def get_frase_inspiracional() -> str:
+    return carregar_overrides().get("frase_inspiracional", FRASE_INSPIRACIONAL)
+
+
+def get_sobre_arquiteta() -> str:
+    return carregar_overrides().get("sobre_arquiteta", SOBRE_ARQUITETA)
+
+
+def get_sobre_gestor() -> str:
+    return carregar_overrides().get("sobre_gestor", SOBRE_GESTOR)
+
+
+def get_sobre_rita() -> str:
+    return carregar_overrides().get("sobre_rita", SOBRE_RITA)
+
+
+def salvar_textos_overrides(campos: dict) -> None:
+    overrides = carregar_overrides()
+    overrides.update(campos)
+    salvar_overrides(overrides)
+
+
+def get_categorias() -> dict:
+    overrides = carregar_overrides().get("categorias", {})
+    resultado = {}
+    for cat_id, cat in CATEGORIAS.items():
+        cat_over = overrides.get(cat_id, {})
+        variantes_over = cat_over.get("variantes", {})
+        novas_variantes = [
+            {**var, **variantes_over.get(str(idx), {})}
+            for idx, var in enumerate(cat["variantes"])
+        ]
+        resultado[cat_id] = {
+            "titulo": cat_over.get("titulo", cat["titulo"]),
+            "descricao": cat_over.get("descricao", cat["descricao"]),
+            "itens": cat["itens"],
+            "variantes": novas_variantes,
+        }
+    return resultado
+
+
+def salvar_variante_override(cat_id: str, idx: int, campos: dict) -> None:
+    overrides = carregar_overrides()
+    cat_over = overrides.setdefault("categorias", {}).setdefault(cat_id, {})
+    variantes_over = cat_over.setdefault("variantes", {})
+    variantes_over[str(idx)] = {**variantes_over.get(str(idx), {}), **campos}
+    salvar_overrides(overrides)
+
+
+def salvar_categoria_texto(cat_id: str, titulo: str, descricao: str) -> None:
+    overrides = carregar_overrides()
+    cat_over = overrides.setdefault("categorias", {}).setdefault(cat_id, {})
+    cat_over["titulo"] = titulo
+    cat_over["descricao"] = descricao
+    salvar_overrides(overrides)
+
+
+def carregar_compras() -> list[dict]:
+    if not COMPRAS_FILE.is_file():
+        return []
+    try:
+        return json.loads(COMPRAS_FILE.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return []
+
+
+def registrar_compra(compra: dict) -> None:
+    compras = carregar_compras()
+    compras.insert(0, compra)
+    COMPRAS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    COMPRAS_FILE.write_text(
+        json.dumps(compras, ensure_ascii=False, indent=2), encoding="utf-8"
+    )

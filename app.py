@@ -1,5 +1,11 @@
 import importlib
 import json
+import os
+import random
+import re
+import uuid
+from datetime import datetime
+from pathlib import Path
 from urllib.parse import quote
 
 import pandas as pd
@@ -9,22 +15,52 @@ import database
 
 importlib.reload(database)
 
+_BASE_DIR_APP = Path(__file__).parent
+
 from database import (
-    CATEGORIAS,
-    EMPRESA,
-    FORMAS_PAGAMENTO,
-    FRASE_INSPIRACIONAL,
     ITENS_PROJETO_COMPLETO_EXTRA,
     ITENS_PROJETO_INTERIORES,
-    SOBRE_ARQUITETA,
-    SOBRE_GESTOR,
-    SOBRE_RITA,
+    PROJETOS_PRONTOS_IMG_DIR,
+    carregar_compras,
+    carregar_projetos_prontos,
     formatar_moeda,
     foto_src,
+    get_categorias,
+    get_empresa,
+    get_frase_inspiracional,
+    get_sobre_arquiteta,
+    get_sobre_gestor,
+    get_sobre_rita,
     itens_projeto_simples,
     listar_todas_variantes,
+    registrar_compra,
+    salvar_categoria_texto,
+    salvar_empresa_overrides,
+    salvar_projetos_prontos,
+    salvar_textos_overrides,
+    salvar_variante_override,
     url_portfolio_embed,
 )
+
+CATEGORIAS = get_categorias()
+EMPRESA = get_empresa()
+FRASE_INSPIRACIONAL = get_frase_inspiracional()
+SOBRE_ARQUITETA = get_sobre_arquiteta()
+SOBRE_GESTOR = get_sobre_gestor()
+SOBRE_RITA = get_sobre_rita()
+
+
+def senha_admin() -> str:
+    try:
+        valor = st.secrets.get("ADMIN_PASSWORD")
+    except Exception:
+        valor = None
+    return valor or os.environ.get("ADMIN_PASSWORD") or "1234"
+
+
+def eh_arquiteta() -> bool:
+    return st.session_state.get("papel") == "arquiteta"
+
 
 st.set_page_config(
     page_title="RF Arquitetura & Interiores",
@@ -400,6 +436,87 @@ CSS = """
         box-shadow: 0 8px 24px rgba(166, 124, 82, 0.35);
         display: block;
         margin: 0 auto 0.75rem auto;
+    }
+
+    .badge-papel {
+        padding: 0.6rem 0.75rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-align: center;
+        margin-bottom: 0.75rem;
+    }
+
+    .badge-papel-arquiteta {
+        background: linear-gradient(135deg, #1f1810, #5c4a32);
+        color: #f5e6d0;
+        border: 1px solid var(--rf-dourado);
+        box-shadow: 0 4px 14px rgba(31, 24, 16, 0.3);
+    }
+
+    .badge-papel-cliente {
+        background: var(--rf-creme-medio);
+        color: var(--rf-marrom);
+        border: 1px solid var(--rf-dourado-claro);
+    }
+
+    .card-projeto-pronto {
+        background: linear-gradient(180deg, #ffffff 0%, #faf6f0 100%);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid var(--rf-dourado-claro);
+        box-shadow: 0 6px 20px rgba(92, 74, 50, 0.15);
+        margin-bottom: 1.25rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card-projeto-pronto:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 28px rgba(166, 124, 82, 0.28);
+    }
+
+    .pix-box {
+        background: linear-gradient(180deg, #ffffff 0%, #f5ebe0 100%);
+        border: 2px dashed var(--rf-dourado);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin: 0.75rem 0;
+        text-align: center;
+    }
+
+    .pix-box p {
+        margin: 0.2rem 0;
+        color: #6b5d4d !important;
+    }
+
+    .pix-chave {
+        font-family: 'Courier New', monospace;
+        font-size: 1.1rem !important;
+        font-weight: 700;
+        color: var(--rf-marrom) !important;
+        word-break: break-all;
+    }
+
+    .card-projeto-pronto img {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+        display: block;
+    }
+
+    .card-projeto-pronto .corpo {
+        padding: 1rem 1.25rem 1.25rem;
+    }
+
+    .card-projeto-pronto h3 {
+        margin: 0 0 0.4rem 0 !important;
+        color: var(--rf-marrom) !important;
+    }
+
+    .card-projeto-pronto p {
+        color: #4a4035 !important;
+        font-size: 0.92rem;
+        margin: 0;
     }
 
     .equipe-legenda {
@@ -1182,6 +1299,37 @@ def card_preco(variante: dict, categoria: dict, cat_id: str, idx: int):
         unsafe_allow_html=True,
     )
 
+    if eh_arquiteta():
+        with st.expander("✏️ Editar valores"):
+            with st.form(f"form_editar_variante_{cat_id}_{idx}"):
+                novo_valor = st.number_input(
+                    "Projeto Simples (R$)", min_value=0.0, step=100.0, value=float(variante["valor"])
+                )
+                novo_extra = st.number_input(
+                    "Adicional Projeto Completo (R$)",
+                    min_value=0.0,
+                    step=100.0,
+                    value=float(variante.get("completo_extra", 0)),
+                )
+                novo_interiores = st.number_input(
+                    "Projeto de Interiores (R$)",
+                    min_value=0.0,
+                    step=100.0,
+                    value=float(variante.get("valor_interiores", 0)),
+                )
+                if st.form_submit_button("Salvar valores"):
+                    salvar_variante_override(
+                        cat_id,
+                        idx,
+                        {
+                            "valor": novo_valor,
+                            "completo_extra": novo_extra,
+                            "valor_interiores": novo_interiores,
+                        },
+                    )
+                    st.toast("Valores atualizados!")
+                    st.rerun()
+
     st.markdown('<div class="catalogo-pacote-botoes">', unsafe_allow_html=True)
 
     no_carrinho_simples = item_no_carrinho(cat_id, idx, "simples")
@@ -1281,6 +1429,53 @@ def card_preco(variante: dict, categoria: dict, cat_id: str, idx: int):
 
 
 def conteudo_sobre():
+    if eh_arquiteta():
+        with st.expander("✏️ Editar textos e contatos do site"):
+            with st.form("form_editar_textos"):
+                st.markdown("**Textos institucionais**")
+                nova_frase = st.text_area("Frase inspiracional", value=FRASE_INSPIRACIONAL)
+                novo_sobre_arquiteta = st.text_area(
+                    f"Sobre {EMPRESA['arquiteta']}", value=SOBRE_ARQUITETA.strip(), height=150
+                )
+                novo_sobre_gestor = st.text_area(
+                    f"Sobre {EMPRESA['gestor']}", value=SOBRE_GESTOR.strip(), height=150
+                )
+                novo_sobre_rita = st.text_area(
+                    f"Sobre {EMPRESA['rita_cassia']}", value=SOBRE_RITA.strip(), height=150
+                )
+
+                st.markdown("---")
+                st.markdown("**Contato**")
+                novo_whatsapp = st.text_input(
+                    "WhatsApp (só números, com DDI e DDD)", value=EMPRESA["whatsapp"]
+                )
+                novo_site = st.text_input("Site", value=EMPRESA["site"])
+                novo_portfolio = st.text_input("Link do portfólio (Canva)", value=EMPRESA["portfolio"])
+                nova_chave_pix = st.text_input(
+                    "Chave Pix para recebimento", value=EMPRESA.get("chave_pix", "")
+                )
+
+                if st.form_submit_button("Salvar alterações"):
+                    salvar_textos_overrides(
+                        {
+                            "frase_inspiracional": nova_frase.strip(),
+                            "sobre_arquiteta": novo_sobre_arquiteta.strip(),
+                            "sobre_gestor": novo_sobre_gestor.strip(),
+                            "sobre_rita": novo_sobre_rita.strip(),
+                        }
+                    )
+                    salvar_empresa_overrides(
+                        {
+                            "whatsapp": novo_whatsapp.strip(),
+                            "site": novo_site.strip(),
+                            "portfolio": novo_portfolio.strip(),
+                            "portfolio_embed": f"{novo_portfolio.strip()}?embed",
+                            "chave_pix": nova_chave_pix.strip(),
+                        }
+                    )
+                    st.toast("Alterações salvas!")
+                    st.rerun()
+
     col1, col2, col3, col4 = st.columns(4)
     variantes = listar_todas_variantes()
     valores = [v["valor"] for v in variantes]
@@ -1442,10 +1637,25 @@ def pagina_catalogo():
                 st.session_state.nav_page = "Carrinho"
                 st.rerun()
 
-    tabs = st.tabs([cat["titulo"] for cat in CATEGORIAS.values()])
+    titulos_tabs = [cat["titulo"] for cat in CATEGORIAS.values()]
+    if eh_arquiteta():
+        titulos_tabs = titulos_tabs + ["Projetos Prontos"]
 
-    for tab, (cat_id, cat) in zip(tabs, CATEGORIAS.items()):
+    tabs = st.tabs(titulos_tabs)
+    tabs_categorias = tabs[: len(CATEGORIAS)]
+
+    for tab, (cat_id, cat) in zip(tabs_categorias, CATEGORIAS.items()):
         with tab:
+            if eh_arquiteta():
+                with st.expander("✏️ Editar categoria"):
+                    with st.form(f"form_editar_categoria_{cat_id}"):
+                        novo_titulo = st.text_input("Título", value=cat["titulo"])
+                        nova_descricao = st.text_area("Descrição", value=cat["descricao"])
+                        if st.form_submit_button("Salvar"):
+                            salvar_categoria_texto(cat_id, novo_titulo.strip(), nova_descricao.strip())
+                            st.toast("Categoria atualizada!")
+                            st.rerun()
+
             st.markdown(f"*{cat['descricao']}*")
             st.markdown("---")
             variantes = cat["variantes"]
@@ -1456,6 +1666,89 @@ def pagina_catalogo():
                     if idx < len(variantes):
                         with col:
                             card_preco(variantes[idx], cat, cat_id, idx)
+
+    if eh_arquiteta():
+        with tabs[-1]:
+            conteudo_projetos_prontos()
+
+
+def conteudo_projetos_prontos():
+    st.markdown("*Projetos já concluídos pela RF Arquitetura & Interiores*")
+    st.markdown("---")
+
+    projetos = carregar_projetos_prontos()
+
+    if eh_arquiteta():
+        with st.form("form_add_projeto_pronto", clear_on_submit=True):
+            st.markdown("**Adicionar novo projeto**")
+            nome = st.text_input("Nome do projeto")
+            descricao = st.text_area("Descrição", max_chars=500)
+            imagem = st.file_uploader("Imagem / foto do projeto", type=["png", "jpg", "jpeg", "webp"])
+            if st.form_submit_button("Salvar projeto"):
+                if not nome or not descricao:
+                    st.error("Preencha nome e descrição.")
+                else:
+                    imagem_path = None
+                    if imagem is not None:
+                        PROJETOS_PRONTOS_IMG_DIR.mkdir(parents=True, exist_ok=True)
+                        extensao = Path(imagem.name).suffix.lower() or ".jpg"
+                        nome_arquivo = f"{uuid.uuid4().hex}{extensao}"
+                        destino = PROJETOS_PRONTOS_IMG_DIR / nome_arquivo
+                        destino.write_bytes(imagem.getvalue())
+                        imagem_path = f"static/projetos_prontos/{nome_arquivo}"
+
+                    projetos.insert(
+                        0,
+                        {
+                            "id": uuid.uuid4().hex,
+                            "nome": nome.strip(),
+                            "descricao": descricao.strip(),
+                            "imagem": imagem_path,
+                        },
+                    )
+                    salvar_projetos_prontos(projetos)
+                    st.toast("Projeto adicionado!")
+                    st.rerun()
+
+    if not projetos:
+        st.info("Nenhum projeto adicionado ainda.")
+        return
+
+    for i in range(0, len(projetos), 3):
+        cols = st.columns(3, gap="large")
+        for j, col in enumerate(cols):
+            idx = i + j
+            if idx >= len(projetos):
+                continue
+            projeto = projetos[idx]
+            with col:
+                imagem_html = (
+                    f'<img src="{foto_src(projeto["imagem"], EMPRESA["logo"])}" alt="{projeto["nome"]}">'
+                    if projeto.get("imagem")
+                    else ""
+                )
+                st.markdown(
+                    f"""
+                    <div class="card-projeto-pronto">
+                        {imagem_html}
+                        <div class="corpo">
+                            <h3>{projeto['nome']}</h3>
+                            <p>{projeto['descricao']}</p>
+                        </div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if eh_arquiteta():
+                    if st.button("Excluir", key=f"excluir_pronto_{projeto['id']}", use_container_width=True):
+                        if projeto.get("imagem"):
+                            caminho_img = _BASE_DIR_APP / projeto["imagem"]
+                            if caminho_img.is_file():
+                                caminho_img.unlink()
+                        salvar_projetos_prontos(
+                            [p for p in projetos if p["id"] != projeto["id"]]
+                        )
+                        st.rerun()
 
 
 def pagina_carrinho():
@@ -1529,36 +1822,14 @@ def pagina_vendas():
 
     valor_total = total_carrinho()
 
-    col1, col2 = st.columns([2, 1])
+    st.markdown('<div class="secao-contratar">', unsafe_allow_html=True)
+    st.markdown("### Resumo do Pedido")
+    exibir_tabela(df_resumo_pedido(st.session_state.carrinho))
 
-    with col1:
-        st.markdown('<div class="secao-contratar">', unsafe_allow_html=True)
-        st.markdown("### Resumo do Pedido")
-        exibir_tabela(df_resumo_pedido(st.session_state.carrinho))
-
-        if st.button("Editar carrinho", key="vendas_editar_carrinho"):
-            st.session_state.nav_page = "Carrinho"
-            st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    with col2:
-        st.markdown('<div class="secao-contratar bloco-valores-contratar">', unsafe_allow_html=True)
-        st.markdown("### Valores")
-        for proj in st.session_state.carrinho:
-            st.metric(
-                f"{proj['variante']}",
-                formatar_moeda(valor_item(proj)),
-            )
-        st.metric("TOTAL", formatar_moeda(valor_total))
-
-        st.markdown("---")
-        st.markdown("**Parcelamento (cartão 12x):**")
-        parcela = valor_total / 12
-        st.markdown(
-            f'<p class="parcela-destaque">{formatar_moeda(parcela)}/mês</p>',
-            unsafe_allow_html=True,
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+    if st.button("Editar carrinho", key="vendas_editar_carrinho"):
+        st.session_state.nav_page = "Carrinho"
+        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown('<div class="secao-contratar bloco-dados-contratar">', unsafe_allow_html=True)
@@ -1580,86 +1851,176 @@ def pagina_vendas():
 
     st.markdown("---")
     st.markdown('<div class="secao-contratar bloco-pagamento-contratar">', unsafe_allow_html=True)
-    st.markdown("### Forma de Pagamento")
+    st.markdown("### Escolha como pagar")
+
+    METODOS_INFO = [
+        {"nome": "Pix", "descricao": "Aprovação imediata • 10% de desconto"},
+        {"nome": "Boleto", "descricao": "Aprovação em 1 a 2 dias úteis"},
+        {"nome": "Cartão de crédito ou débito", "descricao": "Parcele em até 12x no crédito"},
+    ]
 
     cols_pag = st.columns(3)
-    for i, fp in enumerate(FORMAS_PAGAMENTO):
+    for i, metodo in enumerate(METODOS_INFO):
         with cols_pag[i]:
             st.markdown(
                 f"""
                 <div class="pagamento-card">
-                    <h4 style="margin:0.5rem 0;">{fp['nome']}</h4>
-                    <p style="font-size:0.85rem; color:#6b5d4d;">{fp['descricao']}</p>
+                    <h4 style="margin:0.5rem 0;">{metodo['nome']}</h4>
+                    <p style="font-size:0.85rem; color:#6b5d4d;">{metodo['descricao']}</p>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
 
-    forma = st.radio(
-        "Selecione a forma de pagamento:",
-        [fp["nome"] for fp in FORMAS_PAGAMENTO],
+    metodo_escolhido = st.radio(
+        "Selecione como pagar:",
+        [m["nome"] for m in METODOS_INFO],
         horizontal=True,
-        key="forma_pag_radio",
+        key="metodo_pag_radio",
     )
+
+    dados_cartao_ok = True
+    parcelas_selecionadas = 1
+    forma = None
+
+    if metodo_escolhido == "Pix":
+        forma = "PIX"
+        st.markdown("#### Pagar com Pix")
+        chave_pix = EMPRESA.get("chave_pix", "")
+        if chave_pix:
+            st.markdown(
+                f"""
+                <div class="pix-box">
+                    <p>Chave Pix para pagamento:</p>
+                    <p class="pix-chave">{chave_pix}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.caption(
+                "Copie a chave acima no aplicativo do seu banco, realize o pagamento e "
+                "depois clique em Confirmar Pagamento abaixo."
+            )
+        else:
+            st.warning("Chave Pix ainda não configurada pela arquiteta. Escolha outra forma de pagamento.")
+
+    elif metodo_escolhido == "Boleto":
+        forma = "Boleto"
+        st.markdown("#### Pagar com Boleto")
+        if "boleto_codigo" not in st.session_state:
+            st.session_state.boleto_codigo = None
+
+        if st.button("Gerar Boleto", key="gerar_boleto"):
+            st.session_state.boleto_codigo = " ".join(
+                f"{random.randint(0, 99999):05d}" for _ in range(10)
+            )
+
+        if st.session_state.boleto_codigo:
+            st.success("Boleto gerado com sucesso!")
+            st.code(st.session_state.boleto_codigo)
+            st.caption(
+                "Pague em qualquer banco, app ou lotérica até o vencimento. "
+                "O pedido é confirmado após a compensação (1 a 2 dias úteis)."
+            )
+        else:
+            st.caption("Clique em \"Gerar Boleto\" para obter o código de pagamento.")
+
+    else:
+        forma = st.radio(
+            "Tipo de cartão:",
+            ["Cartão de Crédito", "Cartão de Débito"],
+            horizontal=True,
+            key="tipo_cartao_radio",
+        )
+        st.markdown("#### Dados do cartão")
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            numero_cartao = st.text_input(
+                "Número do cartão",
+                key="cartao_numero",
+                placeholder="0000 0000 0000 0000",
+                max_chars=19,
+            )
+        with c2:
+            cvv = st.text_input(
+                "CVV", key="cartao_cvv", placeholder="000", max_chars=4, type="password"
+            )
+        c3, c4 = st.columns(2)
+        with c3:
+            nome_cartao = st.text_input("Nome impresso no cartão", key="cartao_nome")
+        with c4:
+            validade = st.text_input(
+                "Validade (MM/AA)", key="cartao_validade", placeholder="MM/AA", max_chars=5
+            )
+
+        if forma == "Cartão de Crédito":
+            parcelas_selecionadas = st.selectbox(
+                "Parcelas",
+                options=list(range(1, 13)),
+                format_func=lambda n: "À vista" if n == 1 else f"{n}x de {formatar_moeda(valor_total / n)} sem juros",
+                key="cartao_parcelas",
+            )
+
+        numero_limpo = re.sub(r"\D", "", numero_cartao)
+        cvv_limpo = re.sub(r"\D", "", cvv)
+        validade_ok = bool(re.fullmatch(r"(0[1-9]|1[0-2])/\d{2}", validade))
+
+        dados_cartao_ok = (
+            13 <= len(numero_limpo) <= 19
+            and nome_cartao.strip() != ""
+            and validade_ok
+            and 3 <= len(cvv_limpo) <= 4
+        )
+        if any([numero_cartao, nome_cartao, validade, cvv]) and not dados_cartao_ok:
+            st.caption("Confira os dados do cartão: número, nome, validade (MM/AA) e CVV.")
+
     st.session_state.forma_pagamento = forma
     st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
-    dados_ok = (
-        st.session_state.cliente_nome.strip()
-        and st.session_state.cliente_email.strip()
-        and st.session_state.cliente_telefone.strip()
-    )
+    desconto_pix = forma == "PIX"
+    valor_final = valor_total * 0.9 if desconto_pix else valor_total
+
+    if desconto_pix:
+        st.caption(f"Valor original: {formatar_moeda(valor_total)}")
+        st.markdown(f"### Total com 10% de desconto (PIX): {formatar_moeda(valor_final)}")
+    else:
+        st.markdown(f"### Total: {formatar_moeda(valor_final)}")
 
     if st.button(
-        f"Confirmar Pagamento — {formatar_moeda(valor_total)}",
+        f"Confirmar Pagamento — {formatar_moeda(valor_final)}",
         use_container_width=True,
-        disabled=not dados_ok,
         key="vendas_confirmar_pagamento",
     ):
         st.session_state.pagamento_confirmado = True
+        registrar_compra(
+            {
+                "id": uuid.uuid4().hex,
+                "data_hora": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                "cliente_nome": st.session_state.cliente_nome,
+                "cliente_email": st.session_state.cliente_email,
+                "cliente_telefone": st.session_state.cliente_telefone,
+                "itens": [
+                    {
+                        "categoria": p["categoria"],
+                        "variante": p["variante"],
+                        "tipo": label_tipo_projeto(p),
+                        "valor": valor_item(p),
+                    }
+                    for p in st.session_state.carrinho
+                ],
+                "total": valor_final,
+                "forma_pagamento": st.session_state.forma_pagamento,
+                "parcelas": parcelas_selecionadas if forma == "Cartão de Crédito" else 1,
+                "desconto_pix_aplicado": desconto_pix,
+            }
+        )
         st.balloons()
         st.rerun()
 
-    if not dados_ok:
-        st.caption("Preencha todos os dados para confirmar o pagamento.")
-
     if st.session_state.pagamento_confirmado:
-        st.success("Pagamento confirmado com sucesso!")
-        st.markdown(
-            f"""
-            ### Próximo passo: fale com nosso time de arquitetura!
-
-            Agora que seu pagamento foi confirmado, entre em contato com a **{EMPRESA['arquiteta']}**
-            pelo WhatsApp para iniciar o briefing do seu projeto personalizado.
-            """
-        )
-
-        projetos_msg = "%0A".join(
-            f"• {p['categoria']} — {p['variante']} ({p['area']}) — "
-            f"{label_tipo_projeto(p)} — {formatar_moeda(valor_item(p))}"
-            for p in st.session_state.carrinho
-        )
-        whatsapp_msg = (
-            f"Olá! Acabei de contratar projeto(s) pela plataforma.%0A%0A"
-            f"*Nome:* {st.session_state.cliente_nome}%0A"
-            f"*Projetos:*%0A{projetos_msg}%0A%0A"
-            f"*Total:* {formatar_moeda(valor_total)}%0A"
-            f"*Pagamento:* {st.session_state.forma_pagamento}"
-        )
-        whatsapp_url = f"https://wa.me/{EMPRESA['whatsapp']}?text={whatsapp_msg}"
-
-        st.link_button(
-            "Conversar no WhatsApp",
-            whatsapp_url,
-            use_container_width=True,
-        )
-
-        st.info(
-            "**Importante:** O WhatsApp só é disponibilizado após a confirmação do pagamento, "
-            "conforme nossa política de atendimento."
-        )
+        st.success("Pagamento confirmado com sucesso! Alguém do nosso time entrará em contato em breve.")
 
 
 def pagina_dashboard():
@@ -1699,12 +2060,122 @@ def pagina_dashboard():
     )
 
 
+def pagina_compras_realizadas():
+    hero("Compras Realizadas", "Clientes que confirmaram pagamento pela plataforma")
+
+    compras = carregar_compras()
+
+    if not compras:
+        st.info("Nenhuma compra registrada ainda.")
+        return
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(
+            f'<div class="metric-box"><div class="valor">{len(compras)}</div><div class="label">Compras</div></div>',
+            unsafe_allow_html=True,
+        )
+    with col2:
+        receita_total = sum(c["total"] for c in compras)
+        st.markdown(
+            f'<div class="metric-box"><div class="valor">{formatar_moeda(receita_total)}</div><div class="label">Receita total</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
+
+    for compra in compras:
+        titulo = f"{compra['cliente_nome'] or 'Cliente sem nome'} — {formatar_moeda(compra['total'])} — {compra['data_hora']}"
+        with st.expander(titulo):
+            st.markdown(f"**E-mail:** {compra['cliente_email'] or '—'}")
+            st.markdown(f"**Telefone:** {compra['cliente_telefone'] or '—'}")
+            forma_txt = compra["forma_pagamento"]
+            if compra.get("parcelas", 1) > 1:
+                forma_txt += f" em {compra['parcelas']}x"
+            st.markdown(f"**Forma de pagamento:** {forma_txt}")
+            st.markdown("**Itens:**")
+            for item in compra["itens"]:
+                st.markdown(
+                    f"- {item['categoria']} — {item['variante']} ({item['tipo']}) — {formatar_moeda(item['valor'])}"
+                )
+
+
+def tela_selecao_papel():
+    hero(EMPRESA["nome"], "Como você quer acessar o site?")
+
+    col1, col2 = st.columns(2, gap="large")
+
+    with col1:
+        st.markdown(
+            """
+            <div class="sobre-card">
+                <h3>👤 Sou Cliente</h3>
+                <p>Faça seu cadastro rápido e veja o catálogo, preços e contrate um projeto.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        with st.form("form_cadastro_cliente"):
+            nome_cadastro = st.text_input("Nome completo", value=st.session_state.cliente_nome)
+            email_cadastro = st.text_input("E-mail", value=st.session_state.cliente_email)
+            telefone_cadastro = st.text_input(
+                "Telefone / WhatsApp", value=st.session_state.cliente_telefone
+            )
+            if st.form_submit_button("Entrar como Cliente", use_container_width=True):
+                st.session_state.cliente_nome = nome_cadastro.strip()
+                st.session_state.cliente_email = email_cadastro.strip()
+                st.session_state.cliente_telefone = telefone_cadastro.strip()
+                st.session_state.papel = "cliente"
+                st.session_state.nav_page = "Início"
+                st.rerun()
+
+    with col2:
+        st.markdown(
+            """
+            <div class="sobre-card">
+                <h3>🛠️ Sou Arquiteta</h3>
+                <p>Acesse o painel para editar preços, textos e projetos do site.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        senha = st.text_input("Senha de acesso", type="password", key="senha_papel_arquiteta")
+        if st.button("Entrar como Arquiteta", use_container_width=True, key="entrar_arquiteta"):
+            if senha == senha_admin():
+                st.session_state.papel = "arquiteta"
+                st.session_state.nav_page = "Início"
+                st.rerun()
+            else:
+                st.error("Senha incorreta.")
+
+
 def main():
     init_session()
+
+    if "papel" not in st.session_state:
+        tela_selecao_papel()
+        return
 
     with st.sidebar:
         st.markdown("## RF Arquitetura")
         st.markdown("*Interiores & Projetos*")
+
+        if eh_arquiteta():
+            st.markdown(
+                '<div class="badge-papel badge-papel-arquiteta">🛠️ Modo Arquiteta</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                '<div class="badge-papel badge-papel-cliente">👤 Modo Cliente</div>',
+                unsafe_allow_html=True,
+            )
+
+        if st.button("Trocar de usuário", use_container_width=True, key="trocar_papel"):
+            del st.session_state["papel"]
+            st.session_state.nav_page = "Início"
+            st.rerun()
+
         st.markdown("---")
 
         paginas = {
@@ -1714,6 +2185,8 @@ def main():
             "Contratar": pagina_vendas,
             "Dashboard": pagina_dashboard,
         }
+        if eh_arquiteta():
+            paginas["Compras Realizadas"] = pagina_compras_realizadas
 
         if "nav_page" not in st.session_state:
             st.session_state.nav_page = "Início"
